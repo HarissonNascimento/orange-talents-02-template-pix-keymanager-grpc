@@ -1,3 +1,33 @@
 micronaut:
   application:
     name: keymanagerGrpc
+
+grpc:
+  server:
+    port: ${SERVER_PORT:`50051`}
+    keep-alive-time: 1h
+    max-inbound-message-size: 1024
+
+datasources:
+  default:
+    url: ${DB_URI:`jdbc:mysql://localhost:3306/keymanager?createDatabaseIfNotExist=true`}
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:`defUser`}
+    password: ${DB_PASSWORD:`defPassword`}
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        show_sql: true
+        format_sql: true
+
+itau:
+  accounts:
+    url: ${ITAU_URL:`http://localhost:9091`}
+
+bcb:
+  pix:
+    url: ${BCB_URL:`http://localhost:8082`}
