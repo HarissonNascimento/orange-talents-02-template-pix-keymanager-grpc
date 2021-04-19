@@ -6,6 +6,7 @@ import org.hibernate.annotations.Type
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
@@ -29,7 +30,12 @@ class PixKey(
     @field:NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val accountType: GrpcAccountType
+    val accountType: GrpcAccountType,
+
+    @field:Valid
+    @field:NotNull
+    @Embedded
+    val linkedBankAccount: BankAccount
 
 ) {
 
