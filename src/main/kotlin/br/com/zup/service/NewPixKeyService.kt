@@ -1,6 +1,7 @@
 package br.com.zup.service
 
 import br.com.zup.client.itau.ItauClient
+import br.com.zup.enums.KeyType
 import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
 import br.com.zup.model.request.NewPixKeyRequest
@@ -33,6 +34,15 @@ class NewPixKeyService(
 
         val itauResponseBody =
             consultBankAccount(newPixKeyRequest.clientId.toString(), newPixKeyRequest.accountType!!.name)
+
+        if (newPixKeyRequest.keyType!! == KeyType.CPF) {
+            if (!newPixKeyRequest.keyValue.equals(itauResponseBody.ownerCpf))
+                throw StatusRuntimeException(
+                    Status
+                        .INVALID_ARGUMENT
+                        .withDescription("O CPF fornecido não pertence a está conta!")
+                )
+        }
 
         val pixKey = newPixKeyRequest.toPixKey(itauResponseBody)
 
