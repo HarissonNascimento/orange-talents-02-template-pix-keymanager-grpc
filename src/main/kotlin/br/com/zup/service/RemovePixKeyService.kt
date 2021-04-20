@@ -1,10 +1,9 @@
 package br.com.zup.service
 
+import br.com.zup.grpc.exception.PixKeyNotFoundException
 import br.com.zup.model.domain.PixKey
 import br.com.zup.model.request.RemovePixKeyRequest
 import br.com.zup.repository.PixKeyRepository
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.micronaut.validation.Validated
 import java.util.*
 import javax.inject.Inject
@@ -25,11 +24,7 @@ class RemovePixKeyService(
             UUID.fromString(removeRequest.pixId),
             UUID.fromString(removeRequest.clientId)
         ).orElseThrow {
-            StatusRuntimeException(
-                Status
-                    .NOT_FOUND
-                    .withDescription("Chave não encontrada!")
-            )
+            PixKeyNotFoundException("Chave não encontrada!")
         }
 
         pixKeyRepository.delete(pixKey)

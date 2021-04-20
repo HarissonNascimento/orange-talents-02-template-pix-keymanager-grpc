@@ -2,12 +2,13 @@ package br.com.zup.service
 
 import br.com.zup.client.itau.ItauClient
 import br.com.zup.enums.KeyType
+import br.com.zup.grpc.exception.CPFDontMatchException
+import br.com.zup.grpc.exception.PixKeyAlreadyExistsException
+import br.com.zup.grpc.exception.PixKeyNotFoundException
 import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
 import br.com.zup.model.request.NewPixKeyRequest
 import br.com.zup.repository.PixKeyRepository
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,11 +26,8 @@ class NewPixKeyService(
     fun createNewKey(@Valid newPixKeyRequest: NewPixKeyRequest): PixKey {
 
         if (pixKeyRepository.existsByKeyValue(newPixKeyRequest.keyValue)) {
-            throw StatusRuntimeException(
-                Status
-                    .ALREADY_EXISTS
-                    .withDescription("Chave PIX já registrada: ${newPixKeyRequest.keyValue}")
-            )
+            throw PixKeyAlreadyExistsException("Chave PIX já registrada: ${newPixKeyRequest.keyValue}")
+
         }
 
         val itauResponseBody =
@@ -37,11 +35,8 @@ class NewPixKeyService(
 
         if (newPixKeyRequest.keyType!! == KeyType.CPF) {
             if (!newPixKeyRequest.keyValue.equals(itauResponseBody.ownerCpf))
-                throw StatusRuntimeException(
-                    Status
-                        .INVALID_ARGUMENT
-                        .withDescription("O CPF fornecido não pertence a está conta!")
-                )
+                throw CPFDontMatchException("O CPF fornecido não pertence a está conta!")
+
         }
 
         val pixKey = newPixKeyRequest.toPixKey(itauResponseBody)
@@ -56,11 +51,9 @@ class NewPixKeyService(
         val itauConsultResponse =
             itauClient.consultItauAccount(clientId, accountType)
 
-        return itauConsultResponse.body()?.toBankAccount() ?: throw StatusRuntimeException(
-            Status
-                .NOT_FOUND
-                .withDescription("Não foi possivel encontrar o cliente!")
-        )
+        return itauConsultResponse.body()?.toBankAccount()
+            ?: throw PixKeyNotFoundException("Não foi possivel encontrar o cliente!")
+
     }
 
 }
