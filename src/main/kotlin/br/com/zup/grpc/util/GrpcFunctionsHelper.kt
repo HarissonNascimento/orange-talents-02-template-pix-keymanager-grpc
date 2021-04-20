@@ -1,12 +1,17 @@
 package br.com.zup.grpc.util
 
-import br.com.zup.GrpcAccountType
-import br.com.zup.GrpcCreatedAt
-import br.com.zup.GrpcKeyType
-import br.com.zup.GrpcNewPixKeyRequest
+import br.com.zup.*
 import br.com.zup.enums.KeyType
 import br.com.zup.model.request.NewPixKeyRequest
+import br.com.zup.model.request.RemovePixKeyRequest
 import java.time.LocalDateTime
+
+fun GrpcRemovePixKeyRequest.toRemovePixKeyRequest(): RemovePixKeyRequest {
+    return RemovePixKeyRequest(
+        pixId = this.pixId,
+        clientId = this.clientId
+    )
+}
 
 fun GrpcNewPixKeyRequest.toNewPixKeyRequest(): NewPixKeyRequest {
 

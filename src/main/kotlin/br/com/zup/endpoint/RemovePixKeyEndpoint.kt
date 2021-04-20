@@ -1,12 +1,11 @@
 package br.com.zup.endpoint
 
-import br.com.zup.GrpcNewPixKeyRequest
-import br.com.zup.GrpcNewPixKeyResponse
-import br.com.zup.KeymanagerRegisterServiceGrpc
-import br.com.zup.grpc.util.buildByLocalDateTime
-import br.com.zup.grpc.util.toNewPixKeyRequest
+import br.com.zup.GrpcRemovePixKeyRequest
+import br.com.zup.GrpcRemovePixKeyResponse
+import br.com.zup.KeymanagerRemoveServiceGrpc
+import br.com.zup.grpc.util.toRemovePixKeyRequest
 import br.com.zup.model.domain.PixKey
-import br.com.zup.service.NewPixKeyService
+import br.com.zup.service.RemovePixKeyService
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
@@ -15,33 +14,28 @@ import javax.inject.Singleton
 import javax.validation.ConstraintViolationException
 
 @Singleton
-class NewPixKeyGrpcEndpoint(@Inject private val newPixKeyService: NewPixKeyService) :
-    KeymanagerRegisterServiceGrpc.KeymanagerRegisterServiceImplBase() {
+class RemovePixKeyEndpoint(@Inject val removeService: RemovePixKeyService) :
+    KeymanagerRemoveServiceGrpc.KeymanagerRemoveServiceImplBase() {
 
-    override fun createNewKey(
-        request: GrpcNewPixKeyRequest,
-        responseObserver: StreamObserver<GrpcNewPixKeyResponse>
+    override fun removePixKey(
+        request: GrpcRemovePixKeyRequest,
+        responseObserver: StreamObserver<GrpcRemovePixKeyResponse>
     ) {
 
-        val newPixKeyRequest = request.toNewPixKeyRequest()
+        val removePixKeyRequest = request.toRemovePixKeyRequest()
         val pixKey: PixKey?
 
         try {
-
-            pixKey = newPixKeyService.createNewKey(newPixKeyRequest)
+            pixKey = removeService.removePixKey(removePixKeyRequest)
 
             responseObserver.onNext(
-                GrpcNewPixKeyResponse.newBuilder()
+                GrpcRemovePixKeyResponse.newBuilder()
                     .setClientId(pixKey.clientId.toString())
                     .setPixId(pixKey.id.toString())
-                    .setCreatedAt(
-                        buildByLocalDateTime(pixKey.createdAt)
-                    )
                     .build()
             )
 
             responseObserver.onCompleted()
-
         } catch (e: StatusRuntimeException) {
 
             responseObserver.onError(e)
@@ -65,7 +59,6 @@ class NewPixKeyGrpcEndpoint(@Inject private val newPixKeyService: NewPixKeyServi
             )
 
         }
-
     }
 
 }

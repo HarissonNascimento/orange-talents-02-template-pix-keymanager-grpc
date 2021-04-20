@@ -3,6 +3,7 @@ package br.com.zup.model.request
 
 import br.com.zup.GrpcAccountType
 import br.com.zup.annotation.ValidPixKey
+import br.com.zup.annotation.ValidUUID
 import br.com.zup.enums.KeyType
 import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
@@ -16,6 +17,7 @@ import javax.validation.constraints.Size
 @ValidPixKey
 data class NewPixKeyRequest(
     @field:NotBlank
+    @field:ValidUUID
     val clientId: String?,
     @field:NotNull
     val keyType: KeyType?,

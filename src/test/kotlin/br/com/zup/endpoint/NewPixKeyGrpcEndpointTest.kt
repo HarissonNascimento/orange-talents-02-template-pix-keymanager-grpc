@@ -3,7 +3,7 @@ package br.com.zup.endpoint
 import br.com.zup.GrpcAccountType
 import br.com.zup.GrpcKeyType
 import br.com.zup.GrpcNewPixKeyRequest
-import br.com.zup.KeymanagerServiceGrpc
+import br.com.zup.KeymanagerRegisterServiceGrpc
 import br.com.zup.client.itau.ItauClient
 import br.com.zup.client.itau.model.response.AccountClientResponse
 import br.com.zup.client.itau.model.response.Institute
@@ -35,7 +35,7 @@ import javax.inject.Inject
 @MicronautTest(transactional = false)
 internal class NewPixKeyGrpcEndpointTest(
     private val pixKeyRepository: PixKeyRepository,
-    private val grpcClient: KeymanagerServiceGrpc.KeymanagerServiceBlockingStub
+    private val grpcClient: KeymanagerRegisterServiceGrpc.KeymanagerRegisterServiceBlockingStub
 ) {
 
     @Inject
@@ -80,7 +80,7 @@ internal class NewPixKeyGrpcEndpointTest(
     fun `dont register new pix key when given invalid client id`() {
         `when`(
             itauClient.consultItauAccount(
-                clientId = "INVALID",
+                clientId = CLIENT_ID.toString(),
                 type = GrpcAccountType.CONTA_CORRENTE.name
             )
         )
@@ -89,7 +89,7 @@ internal class NewPixKeyGrpcEndpointTest(
         val thrown = assertThrows<StatusRuntimeException> {
             grpcClient.createNewKey(
                 GrpcNewPixKeyRequest.newBuilder()
-                    .setClientId("INVALID")
+                    .setClientId(CLIENT_ID.toString())
                     .setKeyType(GrpcKeyType.EMAIL)
                     .setKeyValue("teste@email.com")
                     .setAccountType(GrpcAccountType.CONTA_CORRENTE)
@@ -227,17 +227,16 @@ internal class NewPixKeyGrpcEndpointTest(
     }
 
 
-
     @MockBean(ItauClient::class)
     fun itauClient(): ItauClient {
         return Mockito.mock(ItauClient::class.java)
     }
 
     @Factory
-    class Clients {
+    class RegisterClient {
         @Bean
-        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerServiceGrpc.KeymanagerServiceBlockingStub {
-            return KeymanagerServiceGrpc.newBlockingStub(channel)
+        fun registerBlockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerRegisterServiceGrpc.KeymanagerRegisterServiceBlockingStub {
+            return KeymanagerRegisterServiceGrpc.newBlockingStub(channel)
         }
     }
 

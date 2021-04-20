@@ -6,16 +6,32 @@ option java_outer_classname = "KeymanagerGrpc";
 
 package br.com.zup;
 
-service KeymanagerService {
+service KeymanagerRegisterService {
 
   rpc createNewKey (GrpcNewPixKeyRequest) returns (GrpcNewPixKeyResponse) {}
 
 }
 
+service KeymanagerRemoveService {
+
+  rpc removePixKey(GrpcRemovePixKeyRequest) returns (GrpcRemovePixKeyResponse) {}
+
+}
+
+message GrpcRemovePixKeyRequest {
+  string pixId = 1;
+  string clientId = 2;
+}
+
+message GrpcRemovePixKeyResponse {
+  string pixId = 1;
+  string clientId = 2;
+}
+
 message GrpcNewPixKeyRequest {
- string clientId = 1;
+  string clientId = 1;
   GrpcKeyType keyType = 2;
- string keyValue = 3;
+  string keyValue = 3;
   GrpcAccountType accountType = 4;
 }
 
