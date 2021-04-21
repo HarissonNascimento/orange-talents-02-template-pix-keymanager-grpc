@@ -31,7 +31,7 @@ data class NewPixKeyRequest(
         return PixKey(
             clientId = UUID.fromString(this.clientId),
             keyType = KeyType.valueOf(this.keyType!!.name),
-            keyValue = if (this.keyType == KeyType.CHAVE_ALEATORIA) UUID.randomUUID().toString() else this.keyValue!!,
+            keyValue = this.keyValue!!,
             accountType = GrpcAccountType.valueOf(this.accountType!!.name),
             linkedBankAccount = linkedBankAccount
         )

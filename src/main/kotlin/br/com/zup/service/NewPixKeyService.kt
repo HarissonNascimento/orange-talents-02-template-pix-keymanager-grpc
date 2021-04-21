@@ -1,5 +1,7 @@
 package br.com.zup.service
 
+import br.com.zup.client.bcb.BcbClient
+import br.com.zup.client.bcb.model.request.BCBCreatePixKeyRequest
 import br.com.zup.client.itau.ItauClient
 import br.com.zup.enums.KeyType
 import br.com.zup.grpc.exception.CPFDontMatchException
@@ -9,6 +11,7 @@ import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
 import br.com.zup.model.request.NewPixKeyRequest
 import br.com.zup.repository.PixKeyRepository
+import io.micronaut.http.HttpStatus
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +22,8 @@ import javax.validation.Valid
 @Singleton
 class NewPixKeyService(
     @Inject val pixKeyRepository: PixKeyRepository,
-    @Inject val itauClient: ItauClient
+    @Inject val itauClient: ItauClient,
+    @Inject val bcbClient: BcbClient
 ) {
 
     @Transactional
@@ -40,6 +44,13 @@ class NewPixKeyService(
         }
 
         val pixKey = newPixKeyRequest.toPixKey(itauResponseBody)
+
+        val bcbResponse = bcbClient.registerPixKey(BCBCreatePixKeyRequest.of(pixKey))
+
+        if (bcbResponse.status != HttpStatus.CREATED)
+            throw IllegalStateException("Erro ao registrar chave PIX no Banco Central do Brasil (BCB)")
+
+        pixKey.updateThisKeyValue(bcbResponse.body()!!.key)
 
         pixKeyRepository.save(pixKey)
 

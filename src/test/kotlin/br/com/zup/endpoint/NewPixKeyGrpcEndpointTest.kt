@@ -4,11 +4,15 @@ import br.com.zup.GrpcAccountType
 import br.com.zup.GrpcKeyType
 import br.com.zup.GrpcNewPixKeyRequest
 import br.com.zup.KeymanagerRegisterServiceGrpc
+import br.com.zup.client.bcb.BcbClient
+import br.com.zup.client.bcb.model.request.BCBCreatePixKeyRequest
+import br.com.zup.client.bcb.model.response.BCBCreatePixKeyResponse
 import br.com.zup.client.itau.ItauClient
 import br.com.zup.client.itau.model.response.AccountClientResponse
 import br.com.zup.client.itau.model.response.Institute
 import br.com.zup.client.itau.model.response.Owner
 import br.com.zup.enums.KeyType
+import br.com.zup.grpc.util.toNewPixKeyRequest
 import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
 import br.com.zup.repository.PixKeyRepository
@@ -29,6 +33,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -41,6 +46,9 @@ internal class NewPixKeyGrpcEndpointTest(
     @Inject
     lateinit var itauClient: ItauClient
 
+    @Inject
+    lateinit var bcbClient: BcbClient
+
     companion object {
         val CLIENT_ID: UUID = UUID.randomUUID()
     }
@@ -52,27 +60,77 @@ internal class NewPixKeyGrpcEndpointTest(
 
     @Test
     fun `register new pix key when given valid data`() {
+
+        val itauClientResponseBody = generatedAccountClientResponse()
+
+        val grpcRequest = GrpcNewPixKeyRequest.newBuilder()
+            .setClientId(CLIENT_ID.toString())
+            .setKeyType(GrpcKeyType.EMAIL)
+            .setKeyValue("teste@email.com")
+            .setAccountType(GrpcAccountType.CONTA_CORRENTE)
+            .build()
+
+        val bcbRequest = createBcbRequest(grpcRequest, itauClientResponseBody)
+
         `when`(
             itauClient.consultItauAccount(
                 clientId = CLIENT_ID.toString(),
                 type = GrpcAccountType.CONTA_CORRENTE.name
             )
         )
-            .thenReturn(HttpResponse.ok(generatedAccountClientResponse()))
+            .thenReturn(HttpResponse.ok(itauClientResponseBody))
 
+        `when`(
+            bcbClient.registerPixKey(bcbRequest)
+        )
+            .thenReturn(HttpResponse.created(createBcbResponse(bcbRequest)))
 
         val createNewKeyResponse = grpcClient.createNewKey(
-            GrpcNewPixKeyRequest.newBuilder()
-                .setClientId(CLIENT_ID.toString())
-                .setKeyType(GrpcKeyType.EMAIL)
-                .setKeyValue("teste@email.com")
-                .setAccountType(GrpcAccountType.CONTA_CORRENTE)
-                .build()
+            grpcRequest
         )
 
         with(createNewKeyResponse) {
             assertEquals(CLIENT_ID.toString(), clientId)
             assertNotNull(pixId)
+        }
+    }
+
+    @Test
+    fun `dont register new pix key when cannot register with BCB`() {
+
+        val itauClientResponseBody = generatedAccountClientResponse()
+
+        val grpcRequest = GrpcNewPixKeyRequest.newBuilder()
+            .setClientId(CLIENT_ID.toString())
+            .setKeyType(GrpcKeyType.EMAIL)
+            .setKeyValue("teste@email.com")
+            .setAccountType(GrpcAccountType.CONTA_CORRENTE)
+            .build()
+
+        val bcbRequest = createBcbRequest(grpcRequest, itauClientResponseBody)
+
+        `when`(
+            itauClient.consultItauAccount(
+                clientId = CLIENT_ID.toString(),
+                type = GrpcAccountType.CONTA_CORRENTE.name
+            )
+        )
+            .thenReturn(HttpResponse.ok(itauClientResponseBody))
+
+        `when`(
+            bcbClient.registerPixKey(bcbRequest)
+        )
+            .thenReturn(HttpResponse.unprocessableEntity())
+
+        val thrown = assertThrows<StatusRuntimeException> {
+            grpcClient.createNewKey(
+                grpcRequest
+            )
+        }
+
+        with(thrown)
+        {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
         }
     }
 
@@ -226,10 +284,14 @@ internal class NewPixKeyGrpcEndpointTest(
         }
     }
 
-
     @MockBean(ItauClient::class)
     fun itauClient(): ItauClient {
         return Mockito.mock(ItauClient::class.java)
+    }
+
+    @MockBean(BcbClient::class)
+    fun bcbClient(): BcbClient {
+        return Mockito.mock(BcbClient::class.java)
     }
 
     @Factory
@@ -238,6 +300,27 @@ internal class NewPixKeyGrpcEndpointTest(
         fun registerBlockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerRegisterServiceGrpc.KeymanagerRegisterServiceBlockingStub {
             return KeymanagerRegisterServiceGrpc.newBlockingStub(channel)
         }
+    }
+
+    private fun createBcbRequest(
+        grpcRequest: GrpcNewPixKeyRequest,
+        accountClientResponse: AccountClientResponse
+    ): BCBCreatePixKeyRequest {
+
+        val bankAccount = accountClientResponse.toBankAccount()
+        val pixKey = grpcRequest.toNewPixKeyRequest().toPixKey(bankAccount)
+
+        return BCBCreatePixKeyRequest.of(pixKey)
+    }
+
+    private fun createBcbResponse(bcbRequest: BCBCreatePixKeyRequest): BCBCreatePixKeyResponse {
+        return BCBCreatePixKeyResponse(
+            keyType = bcbRequest.keyType,
+            key = bcbRequest.key,
+            bankAccount = bcbRequest.bankAccount,
+            owner = bcbRequest.owner,
+            createdAt = LocalDateTime.now()
+        )
     }
 
     private fun generatedAccountClientResponse(): AccountClientResponse {

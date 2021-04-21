@@ -38,7 +38,6 @@ class PixKey(
     val linkedBankAccount: BankAccount
 
 ) {
-
     @Id
     @GeneratedValue
     @field:Type(type = "uuid-char")
@@ -46,5 +45,10 @@ class PixKey(
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
+
+    fun updateThisKeyValue(keyValue: String) {
+        if (keyType == KeyType.CHAVE_ALEATORIA)
+            this.keyValue = keyValue
+    }
 
 }
