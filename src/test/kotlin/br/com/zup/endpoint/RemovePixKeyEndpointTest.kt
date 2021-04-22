@@ -11,6 +11,7 @@ import br.com.zup.enums.KeyType
 import br.com.zup.model.domain.BankAccount
 import br.com.zup.model.domain.PixKey
 import br.com.zup.repository.PixKeyRepository
+import br.com.zup.util.createValidPixKey
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -47,20 +48,7 @@ internal class RemovePixKeyEndpointTest(
         pixKeyRepository.deleteAll()
 
         savedPixKey = pixKeyRepository.save(
-            PixKey(
-                clientId = NewPixKeyGrpcEndpointTest.CLIENT_ID,
-                keyType = KeyType.valueOf(GrpcKeyType.EMAIL.name),
-                keyValue = "test@email.com",
-                accountType = GrpcAccountType.CONTA_CORRENTE,
-                linkedBankAccount = BankAccount(
-                    institute = "Institute Test",
-                    ispb = "00000000",
-                    agency = "0000",
-                    number = "000000",
-                    ownerName = "Owner Test",
-                    ownerCpf = "00000000000"
-                )
-            )
+            createValidPixKey()
         )
     }
 

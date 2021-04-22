@@ -16,7 +16,7 @@ class PixKey(
     @field:NotNull
     @field:Type(type = "uuid-char")
     @Column(nullable = false)
-    val clientId: UUID,
+    val clientId: UUID?,
 
     @field:NotNull
     @Enumerated(EnumType.STRING)

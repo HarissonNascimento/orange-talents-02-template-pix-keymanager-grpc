@@ -10,7 +10,7 @@ class BankAccount(
 
     @field:NotBlank
     @Column(nullable = false)
-    val institute: String,
+    val institute: String?,
 
     @field:NotBlank
     @Column(nullable = false)

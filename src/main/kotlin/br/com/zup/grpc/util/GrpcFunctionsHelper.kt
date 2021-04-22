@@ -2,9 +2,26 @@ package br.com.zup.grpc.util
 
 import br.com.zup.*
 import br.com.zup.enums.KeyType
+import br.com.zup.model.domain.PixKey
 import br.com.zup.model.request.NewPixKeyRequest
+import br.com.zup.model.request.QueryPixKeyByClientIdAndPixIdRequest
+import br.com.zup.model.request.QueryPixKeyByKeyValueRequest
 import br.com.zup.model.request.RemovePixKeyRequest
 import java.time.LocalDateTime
+
+fun GrpcQueryPixKeyByClientIdAndPixIdRequest.toQueryPixKeyByClientIdAndPixIdRequest(): QueryPixKeyByClientIdAndPixIdRequest {
+    return QueryPixKeyByClientIdAndPixIdRequest(
+        clientId = this.clientId,
+        pixId = this.pixId
+    )
+
+}
+
+fun GrpcQueryPixKeyByKeyValueRequest.toQueryPixKeyByKeyValueRequest(): QueryPixKeyByKeyValueRequest {
+    return QueryPixKeyByKeyValueRequest(
+        keyValue = this.keyValue
+    )
+}
 
 fun GrpcRemovePixKeyRequest.toRemovePixKeyRequest(): RemovePixKeyRequest {
     return RemovePixKeyRequest(
@@ -30,7 +47,7 @@ fun GrpcNewPixKeyRequest.toNewPixKeyRequest(): NewPixKeyRequest {
 
 }
 
-fun buildByLocalDateTime(localDateTime: LocalDateTime): GrpcCreatedAt {
+fun buildGrpcCreatedAtByLocalDateTime(localDateTime: LocalDateTime): GrpcCreatedAt {
     return GrpcCreatedAt.newBuilder()
         .setDay(localDateTime.dayOfMonth)
         .setMonth(localDateTime.monthValue)
@@ -38,5 +55,14 @@ fun buildByLocalDateTime(localDateTime: LocalDateTime): GrpcCreatedAt {
         .setHour(localDateTime.hour)
         .setMinute(localDateTime.minute)
         .setSecond(localDateTime.second)
+        .build()
+}
+
+fun buildGrpcBankAccountByPixKey(pixKey: PixKey): GrpcBankAccount{
+    return GrpcBankAccount.newBuilder()
+        .setParticipant(pixKey.linkedBankAccount.ispb)
+        .setBranch(pixKey.linkedBankAccount.agency)
+        .setAccountNumber(pixKey.linkedBankAccount.number)
+        .setAccountType(pixKey.accountType)
         .build()
 }

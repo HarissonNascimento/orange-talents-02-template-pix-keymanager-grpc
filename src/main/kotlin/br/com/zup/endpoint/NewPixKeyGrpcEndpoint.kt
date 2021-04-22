@@ -4,7 +4,7 @@ import br.com.zup.GrpcNewPixKeyRequest
 import br.com.zup.GrpcNewPixKeyResponse
 import br.com.zup.KeymanagerRegisterServiceGrpc
 import br.com.zup.grpc.handler.config.ErrorHandler
-import br.com.zup.grpc.util.buildByLocalDateTime
+import br.com.zup.grpc.util.buildGrpcCreatedAtByLocalDateTime
 import br.com.zup.grpc.util.toNewPixKeyRequest
 import br.com.zup.service.NewPixKeyService
 import io.grpc.stub.StreamObserver
@@ -29,7 +29,7 @@ class NewPixKeyGrpcEndpoint(@Inject private val newPixKeyService: NewPixKeyServi
                 .setClientId(pixKey.clientId.toString())
                 .setPixId(pixKey.id.toString())
                 .setCreatedAt(
-                    buildByLocalDateTime(pixKey.createdAt)
+                    buildGrpcCreatedAtByLocalDateTime(pixKey.createdAt)
                 )
                 .build()
         )

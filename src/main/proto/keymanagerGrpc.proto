@@ -18,6 +18,50 @@ service KeymanagerRemoveService {
 
 }
 
+service KeymanagerQueryDataService {
+
+  rpc queryPixKeyByClientIdAndPixId(GrpcQueryPixKeyByClientIdAndPixIdRequest) returns (GrpcQueryPixKeyByClientIdAndPixIdResponse) {}
+
+  rpc queryPixKeyByKeyValue(GrpcQueryPixKeyByKeyValueRequest) returns (GrpcQueryPixKeyByKeyValueResponse) {}
+
+}
+
+message GrpcQueryPixKeyByClientIdAndPixIdRequest {
+  string clientId = 1;
+  string pixId = 2;
+}
+
+message GrpcQueryPixKeyByKeyValueRequest {
+  string keyValue = 1;
+}
+
+message GrpcQueryPixKeyByClientIdAndPixIdResponse {
+  string pixId = 1;
+  string clientId = 2;
+  GrpcKeyType keyType = 3;
+  string keyValue = 4;
+  string ownerName = 5;
+  string ownerCPF = 6;
+  GrpcBankAccount bankAccount = 7;
+  GrpcCreatedAt createdAt = 8;
+}
+
+message GrpcQueryPixKeyByKeyValueResponse {
+  GrpcKeyType keyType = 3;
+  string keyValue = 4;
+  string ownerName = 5;
+  string ownerCPF = 6;
+  GrpcBankAccount bankAccount = 7;
+  GrpcCreatedAt createdAt = 8;
+}
+
+message GrpcBankAccount {
+  string participant = 1;
+  string branch = 2;
+  string accountNumber = 3;
+  GrpcAccountType accountType = 4;
+}
+
 message GrpcRemovePixKeyRequest {
   string pixId = 1;
   string clientId = 2;
