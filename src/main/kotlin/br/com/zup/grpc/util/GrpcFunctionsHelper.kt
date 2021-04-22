@@ -3,11 +3,14 @@ package br.com.zup.grpc.util
 import br.com.zup.*
 import br.com.zup.enums.KeyType
 import br.com.zup.model.domain.PixKey
-import br.com.zup.model.request.NewPixKeyRequest
-import br.com.zup.model.request.QueryPixKeyByClientIdAndPixIdRequest
-import br.com.zup.model.request.QueryPixKeyByKeyValueRequest
-import br.com.zup.model.request.RemovePixKeyRequest
+import br.com.zup.model.request.*
 import java.time.LocalDateTime
+
+fun GrpcListPixKeyByClientIdRequest.toListPixKeyByClientIdRequest(): ListPixKeyByClientIdRequest {
+    return ListPixKeyByClientIdRequest(
+        clientId = this.clientId
+    )
+}
 
 fun GrpcQueryPixKeyByClientIdAndPixIdRequest.toQueryPixKeyByClientIdAndPixIdRequest(): QueryPixKeyByClientIdAndPixIdRequest {
     return QueryPixKeyByClientIdAndPixIdRequest(

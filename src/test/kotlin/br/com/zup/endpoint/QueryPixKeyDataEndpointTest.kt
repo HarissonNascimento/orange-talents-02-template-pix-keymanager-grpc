@@ -1,5 +1,6 @@
 package br.com.zup.endpoint
 
+import br.com.zup.GrpcListPixKeyByClientIdRequest
 import br.com.zup.GrpcQueryPixKeyByClientIdAndPixIdRequest
 import br.com.zup.GrpcQueryPixKeyByKeyValueRequest
 import br.com.zup.KeymanagerQueryDataServiceGrpc
@@ -24,6 +25,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -168,6 +170,54 @@ internal class QueryPixKeyDataEndpointTest(
             assertEquals(savedPixKey.createdAt.hour, this.createdAt.hour)
             assertEquals(savedPixKey.createdAt.minute, this.createdAt.minute)
         }
+    }
+
+    @Test
+    fun `must list all pix keys by clientId`(){
+
+        val grpcRequest = GrpcListPixKeyByClientIdRequest.newBuilder()
+            .setClientId(savedPixKey.clientId.toString())
+            .build()
+
+        val grpcResponse = grpcClient.listPixKeyByClientId(grpcRequest)
+
+        with(grpcResponse){
+            assertEquals(savedPixKey.clientId.toString(), clientId)
+            assertTrue(pixKeysCount > 0)
+
+            val grpcPixKey = getPixKeys(0)
+
+            assertEquals(savedPixKey.id.toString(), grpcPixKey.pixId)
+            assertEquals(savedPixKey.keyType.name, grpcPixKey.keyType.name)
+            assertEquals(savedPixKey.keyValue, grpcPixKey.keyValue)
+            assertEquals(savedPixKey.accountType, grpcPixKey.accountType)
+            assertEquals(savedPixKey.createdAt.dayOfMonth, grpcPixKey.createdAt.day)
+            assertEquals(savedPixKey.createdAt.monthValue, grpcPixKey.createdAt.month)
+            assertEquals(savedPixKey.createdAt.year, grpcPixKey.createdAt.year)
+            assertEquals(savedPixKey.createdAt.hour, grpcPixKey.createdAt.hour)
+            assertEquals(savedPixKey.createdAt.minute, grpcPixKey.createdAt.minute)
+
+        }
+
+    }
+
+    @Test
+    fun `must return empty list when there is no data registered`(){
+
+        val grpcRequest = GrpcListPixKeyByClientIdRequest.newBuilder()
+            .setClientId(savedPixKey.clientId.toString())
+            .build()
+
+        pixKeyRepository.deleteAll()
+
+        val grpcResponse = grpcClient.listPixKeyByClientId(grpcRequest)
+
+        with(grpcResponse){
+            assertEquals(savedPixKey.clientId.toString(), clientId)
+            assertTrue(pixKeysList.isEmpty())
+
+        }
+
     }
 
     @MockBean(BcbClient::class)

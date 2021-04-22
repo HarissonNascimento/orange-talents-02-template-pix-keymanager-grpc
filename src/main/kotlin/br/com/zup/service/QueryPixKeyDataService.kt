@@ -1,8 +1,13 @@
 package br.com.zup.service
 
+import br.com.zup.GrpcAccountType
+import br.com.zup.GrpcCreatedAt
+import br.com.zup.GrpcKeyType
+import br.com.zup.GrpcPixKey
 import br.com.zup.client.bcb.BcbClient
 import br.com.zup.grpc.exception.PixKeyNotFoundException
 import br.com.zup.model.domain.PixKey
+import br.com.zup.model.request.ListPixKeyByClientIdRequest
 import br.com.zup.model.request.QueryPixKeyByClientIdAndPixIdRequest
 import br.com.zup.model.request.QueryPixKeyByKeyValueRequest
 import br.com.zup.repository.PixKeyRepository
@@ -56,6 +61,31 @@ class QueryPixKeyDataService(
             ?: throw IllegalStateException("Erro ao processar resposta do Banco Central do Brasil (BCB)")
 
         return bcbPixKeyResponse.toPixKey()
+    }
+
+    @Transactional
+    fun listPixKeyByClientId(@Valid listRequest: ListPixKeyByClientIdRequest): List<GrpcPixKey> {
+
+        val listPixKey = pixKeyRepository.findAllByClientId(UUID.fromString(listRequest.clientId))
+
+        return listPixKey.map {
+            GrpcPixKey.newBuilder()
+                .setPixId(it.id.toString())
+                .setKeyType(GrpcKeyType.valueOf(it.keyType.name))
+                .setKeyValue(it.keyValue)
+                .setAccountType(it.accountType)
+                .setCreatedAt(
+                    GrpcCreatedAt.newBuilder()
+                        .setDay(it.createdAt.dayOfMonth)
+                        .setMonth(it.createdAt.monthValue)
+                        .setYear(it.createdAt.year)
+                        .setHour(it.createdAt.hour)
+                        .setMinute(it.createdAt.minute)
+                        .setSecond(it.createdAt.second)
+                        .build()
+                )
+                .build()
+        }
     }
 
 }

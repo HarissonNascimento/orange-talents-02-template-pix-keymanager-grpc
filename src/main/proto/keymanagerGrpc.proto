@@ -24,6 +24,27 @@ service KeymanagerQueryDataService {
 
   rpc queryPixKeyByKeyValue(GrpcQueryPixKeyByKeyValueRequest) returns (GrpcQueryPixKeyByKeyValueResponse) {}
 
+  rpc listPixKeyByClientId(GrpcListPixKeyByClientIdRequest) returns (GrpcListPixKeyByClientIdResponse) {}
+
+}
+
+message GrpcListPixKeyByClientIdRequest {
+  string clientId = 1;
+}
+
+message GrpcListPixKeyByClientIdResponse {
+  string clientId = 1;
+  repeated GrpcPixKey pixKeys = 2;
+
+
+}
+
+message GrpcPixKey {
+  string pixId = 1;
+  GrpcKeyType keyType = 2;
+  string keyValue = 3;
+  GrpcAccountType accountType = 4;
+  GrpcCreatedAt createdAt = 5;
 }
 
 message GrpcQueryPixKeyByClientIdAndPixIdRequest {

@@ -2,10 +2,7 @@ package br.com.zup.endpoint
 
 import br.com.zup.*
 import br.com.zup.grpc.handler.config.ErrorHandler
-import br.com.zup.grpc.util.buildGrpcCreatedAtByLocalDateTime
-import br.com.zup.grpc.util.buildGrpcBankAccountByPixKey
-import br.com.zup.grpc.util.toQueryPixKeyByClientIdAndPixIdRequest
-import br.com.zup.grpc.util.toQueryPixKeyByKeyValueRequest
+import br.com.zup.grpc.util.*
 import br.com.zup.service.QueryPixKeyDataService
 import io.grpc.stub.StreamObserver
 import javax.inject.Inject
@@ -66,6 +63,24 @@ class QueryPixKeyDataEndpoint(@Inject val queryDataService: QueryPixKeyDataServi
                 )
                 .build()
 
+        )
+
+        responseObserver.onCompleted()
+    }
+
+    override fun listPixKeyByClientId(
+        request: GrpcListPixKeyByClientIdRequest,
+        responseObserver: StreamObserver<GrpcListPixKeyByClientIdResponse>
+    ) {
+
+        val listRequest = request.toListPixKeyByClientIdRequest()
+        val listPixKey = queryDataService.listPixKeyByClientId(listRequest)
+
+        responseObserver.onNext(
+            GrpcListPixKeyByClientIdResponse.newBuilder()
+                .setClientId(listRequest.clientId)
+                .addAllPixKeys(listPixKey)
+                .build()
         )
 
         responseObserver.onCompleted()
