@@ -1,6 +1,5 @@
 package br.com.zup.service
 
-import br.com.zup.GrpcAccountType
 import br.com.zup.GrpcCreatedAt
 import br.com.zup.GrpcKeyType
 import br.com.zup.GrpcPixKey

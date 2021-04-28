@@ -10,10 +10,12 @@ grpc:
 
 datasources:
   default:
-    url: ${DB_URI:`jdbc:mysql://localhost:3306/keymanager?createDatabaseIfNotExist=true`}
-    driverClassName: com.mysql.cj.jdbc.Driver
-    username: ${DB_USER:`defUser`}
-    password: ${DB_PASSWORD:`defPassword`}
+    url: ${DB_URI:`jdbc:postgresql://localhost:5432/keymanager`}
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USER:`postgres`}
+    password: ${DB_PASSWORD:`changeme`}
+    schema-generate: CREATE_DROP
+    dialect: ${DB_DIALECT:`POSTGRES`}
 
 jpa:
   default:

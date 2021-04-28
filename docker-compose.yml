@@ -8,17 +8,17 @@ services:
     image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp"
     ports:
       - 9091:9091
-  mysql:
-    image: 'mysql'
+
+  postgresql:
+    image: 'postgres'
     environment:
-      MYSQL_ROOT_PASSWORD: defPassword
-      MYSQL_USER: defUser
-      MYSQL_PASSWORD: defPassword
-      MYSQL_DATABASE: keymanager
+      POSTGRES_DB: keymanager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
     ports:
-      - 3306:3306
+      - 5432:5432
     volumes:
-      - mysql-volume:/var/lib/mysql
+      - postgresql-volume:/var/lib/postgresql/data
 
 volumes:
-  mysql-volume:
+  postgresql-volume:
